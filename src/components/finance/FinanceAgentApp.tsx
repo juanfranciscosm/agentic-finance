@@ -547,8 +547,8 @@ export default function FinanceAgentApp() {
           </div>
         </header>
 
-        <div className="grid gap-6 lg:grid-cols-[1.45fr_1fr]">
-          <section className="flex min-h-[720px] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <div className="grid items-start gap-6 lg:grid-cols-[1.45fr_1fr]">
+          <section className="flex h-[75dvh] min-h-[560px] flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm lg:sticky lg:top-6 lg:h-[calc(100dvh-3rem)] lg:min-h-0">
             <div className="border-b border-slate-200 px-5 py-4">
               <h2 className="font-semibold">
                 Conversación
@@ -559,7 +559,7 @@ export default function FinanceAgentApp() {
               </p>
             </div>
 
-            <div className="flex-1 space-y-4 overflow-y-auto bg-slate-50 p-4 sm:p-6">
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain bg-slate-50 p-4 sm:p-6">
               {messages.map((message) => (
                 <div
                   key={message.id}
@@ -591,8 +591,14 @@ export default function FinanceAgentApp() {
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="border-t border-slate-200 bg-white p-4">
-              <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
+            <div className="shrink-0 border-t border-slate-200 bg-white p-4">
+              <div
+                className={
+                  messages.length > 2
+                    ? "hidden"
+                    : "mb-3 flex gap-2 overflow-x-auto pb-1"
+                }
+              >
                 {QUICK_ACTIONS.map((action) => (
                   <button
                     key={action}
