@@ -838,25 +838,85 @@ function BudgetCard({
     100,
   );
 
+  const thresholdAmount =
+    budget.monthlyLimit *
+    (budget.thresholdPercent / 100);
+
+  const amountUntilThreshold =
+    thresholdAmount - budget.spent;
+
+  const amountOverThreshold =
+    budget.spent - thresholdAmount;
+
+  const amountOverBudget =
+    budget.spent - budget.monthlyLimit;
+
+  function getBudgetMessage(): {
+    text: string;
+    className: string;
+  } {
+    if (budget.overBudget) {
+      return {
+        text:
+          `Has excedido este presupuesto por ` +
+          `${formatCurrency(amountOverBudget)}. ` +
+          `Considera reducir gastos en esta categoría.`,
+        className:
+          "border-red-200 bg-red-50 text-red-700",
+      };
+    }
+
+    if (budget.alertTriggered) {
+      return {
+        text:
+          `Superaste el umbral de alerta por ` +
+          `${formatCurrency(amountOverThreshold)}. ` +
+          `Todavía dispones de ` +
+          `${formatCurrency(budget.remaining)}.`,
+        className:
+          "border-amber-200 bg-amber-50 text-amber-800",
+      };
+    }
+
+    return {
+      text:
+        `Puedes gastar ${formatCurrency(amountUntilThreshold)} ` +
+        `más antes de alcanzar tu alerta del ` +
+        `${budget.thresholdPercent}%.`,
+      className:
+        "border-blue-200 bg-blue-50 text-blue-700",
+    };
+  }
+
+  const budgetMessage = getBudgetMessage();
+
   return (
     <div className="rounded-2xl border border-slate-200 p-4">
       <div className="flex items-center justify-between gap-3">
-        <p className="font-medium">
-          {getCategoryLabel(budget.category)}
-        </p>
+        <div>
+          <p className="font-medium">
+            {getCategoryLabel(budget.category)}
+          </p>
+
+          <p className="mt-1 text-xs text-slate-500">
+            Presupuesto mensual
+          </p>
+        </div>
 
         <span
           className={
-            budget.alertTriggered
-              ? "rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800"
-              : "rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-800"
+            budget.overBudget
+              ? "rounded-full bg-red-100 px-2 py-1 text-xs font-semibold text-red-700"
+              : budget.alertTriggered
+                ? "rounded-full bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800"
+                : "rounded-full bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-800"
           }
         >
-          {budget.percentage}%
+          {budget.percentage}% utilizado
         </span>
       </div>
 
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
+      <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-200">
         <div
           className={
             budget.overBudget
@@ -875,20 +935,52 @@ function BudgetCard({
         <span>
           {formatCurrency(budget.spent)} gastados
         </span>
+
         <span>
-          {formatCurrency(budget.monthlyLimit)}
+          Límite: {formatCurrency(budget.monthlyLimit)}
         </span>
       </div>
 
-      {budget.alertTriggered && (
-        <p className="mt-3 text-xs font-medium text-amber-700">
-          Alcanzaste el umbral configurado de{" "}
-          {budget.thresholdPercent}%.
-        </p>
-      )}
+      <div className="mt-4 rounded-xl bg-slate-50 p-3">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-xs text-slate-500">
+            Umbral de alerta
+          </span>
+
+          <span className="text-sm font-semibold text-slate-800">
+            {budget.thresholdPercent}% ·{" "}
+            {formatCurrency(thresholdAmount)}
+          </span>
+        </div>
+
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <span className="text-xs text-slate-500">
+            Disponible
+          </span>
+
+          <span
+            className={
+              budget.remaining < 0
+                ? "text-sm font-semibold text-red-600"
+                : "text-sm font-semibold text-slate-800"
+            }
+          >
+            {formatCurrency(
+              Math.max(budget.remaining, 0),
+            )}
+          </span>
+        </div>
+      </div>
+
+      <div
+        className={`mt-3 rounded-xl border p-3 text-xs font-medium leading-relaxed ${budgetMessage.className}`}
+      >
+        {budgetMessage.text}
+      </div>
     </div>
   );
 }
+
 
 function ActionButtons({
   state,
