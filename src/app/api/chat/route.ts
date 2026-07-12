@@ -2,6 +2,11 @@ import { z } from "zod";
 
 import { parseFinancialMessage } from "@/lib/ai/parse-financial-message";
 
+import {
+  getCurrentEcuadorMonth,
+} from "@/lib/finance/budget-schema";
+
+
 const ChatRequestSchema = z.object({
   message: z
     .string()
@@ -85,11 +90,37 @@ export async function POST(
         }
       : null;
 
+    const missingBudgetInformation =
+      parsedMessage.missingFields.includes(
+        "budgetAmount",
+      ) ||
+      parsedMessage.missingFields.includes(
+        "budgetCategory",
+      );
+
+    const canConfirmBudget =
+      parsedMessage.intent === "create_budget" &&
+      parsedMessage.budgetAmount > 0 &&
+      parsedMessage.budgetCategory !==
+        "not_applicable" &&
+      !missingBudgetInformation;
+
+    const budgetPreview = canConfirmBudget
+      ? {
+          category: parsedMessage.budgetCategory,
+          monthlyLimit: parsedMessage.budgetAmount,
+          thresholdPercent:
+            parsedMessage.budgetThresholdPercent,
+          month: getCurrentEcuadorMonth(),
+        }
+      : null;
+
     return Response.json({
       ok: true,
       data: {
         ...parsedMessage,
         transactionPreview,
+        budgetPreview,
       },
     });
   } catch (error) {

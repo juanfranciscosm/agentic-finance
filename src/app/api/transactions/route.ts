@@ -1,6 +1,10 @@
 import { CreateTransactionSchema } from "@/lib/finance/transaction-schema";
 
 import {
+  getBudgetStatus,
+} from "@/lib/database/budget";
+
+import {
   createTransaction,
   getFinancialSummary,
 } from "@/lib/database/transactions";
@@ -34,12 +38,35 @@ export async function POST(
 
     const summary = await getFinancialSummary();
 
+    const budgetStatus =
+        transaction.transactionType === "expense"
+            ? await getBudgetStatus(
+                transaction.category,
+                transaction.date.slice(0, 7),
+            )
+        : null;
+
+    const budgetAlert =
+        budgetStatus?.alertTriggered
+            ? {
+                type: budgetStatus.overBudget
+                    ? "budget_exceeded"
+                    : "threshold_reached",
+
+                message: budgetStatus.overBudget
+                    ? `Superaste tu presupuesto de ${budgetStatus.category}. Has gastado $${budgetStatus.spent} de $${budgetStatus.monthlyLimit}.`
+                    : `Has utilizado el ${budgetStatus.percentage}% de tu presupuesto de ${budgetStatus.category}.`,
+            }
+        : null;
+
     return Response.json(
       {
         ok: true,
         message: "Transacción registrada correctamente.",
         transaction,
         summary,
+        budgetStatus,
+        budgetAlert,
       },
       {
         status: 201,
