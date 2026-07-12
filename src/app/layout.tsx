@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Saldo AI",
   description:
     "Agente inteligente para finanzas personales y soporte financiero.",
