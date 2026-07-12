@@ -1,11 +1,8 @@
 import { z } from "zod";
 
 import { parseFinancialMessage } from "@/lib/ai/parse-financial-message";
-
-import {
-  getCurrentEcuadorMonth,
-} from "@/lib/finance/budget-schema";
-
+import { getCurrentEcuadorMonth } from "@/lib/finance/budget-schema";
+import { routeSupportMessage } from "@/lib/support/support-router";
 
 const ChatRequestSchema = z.object({
   message: z
@@ -50,33 +47,18 @@ export async function POST(
       );
     }
 
-    const parsedMessage = await parseFinancialMessage(
-      requestResult.data.message,
-    );
+    const userMessage = requestResult.data.message;
 
-    const previewConditions = {
-      correctIntent:
-        parsedMessage.intent === "register_transaction",
+    const parsedMessage =
+      await parseFinancialMessage(userMessage);
 
-      validTransactionType:
-        parsedMessage.transactionType !== "not_applicable",
-
-      validAmount:
-        parsedMessage.amount > 0,
-
-      validCategory:
-        parsedMessage.category !== "not_applicable",
-
-      noMissingFields:
-        parsedMessage.missingFields.length === 0,
-    };
-
+    // Vista previa de una transacción.
     const canConfirmTransaction =
-      previewConditions.correctIntent &&
-      previewConditions.validTransactionType &&
-      previewConditions.validAmount &&
-      previewConditions.validCategory &&
-      previewConditions.noMissingFields;
+      parsedMessage.intent === "register_transaction" &&
+      parsedMessage.transactionType !== "not_applicable" &&
+      parsedMessage.amount > 0 &&
+      parsedMessage.category !== "not_applicable" &&
+      parsedMessage.missingFields.length === 0;
 
     const transactionPreview = canConfirmTransaction
       ? {
@@ -90,6 +72,7 @@ export async function POST(
         }
       : null;
 
+    // Vista previa de un presupuesto.
     const missingBudgetInformation =
       parsedMessage.missingFields.includes(
         "budgetAmount",
@@ -115,16 +98,38 @@ export async function POST(
         }
       : null;
 
+    // Para soporte, Gemini solo clasifica.
+    // La respuesta final proviene de la base aprobada.
+    const shouldRouteToSupport =
+      parsedMessage.intent === "support_question" ||
+      parsedMessage.intent === "unknown";
+
+    const supportResult = shouldRouteToSupport
+      ? routeSupportMessage(
+          userMessage,
+          parsedMessage.isSensitive,
+        )
+      : null;
+
+    const finalReply =
+      supportResult?.reply ??
+      parsedMessage.reply;
+
     return Response.json({
       ok: true,
       data: {
         ...parsedMessage,
+        reply: finalReply,
         transactionPreview,
         budgetPreview,
+        supportResult,
       },
     });
   } catch (error) {
-    console.error("Error en POST /api/chat:", error);
+    console.error(
+      "Error en POST /api/chat:",
+      error,
+    );
 
     const details =
       error instanceof Error
