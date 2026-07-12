@@ -1,100 +1,151 @@
 export interface KnowledgeArticle {
-  id: string;
-  title: string;
-  keywords: string[];
-  answer: string;
-}
-
-export interface KnowledgeSearchResult {
   articleId: string;
   title: string;
   answer: string;
+  keywords: string[];
+}
+
+export interface KnowledgeSearchResult
+  extends KnowledgeArticle {
   matchedKeywords: string[];
 }
 
-export const knowledgeBase: KnowledgeArticle[] = [
+export const APPROVED_KNOWLEDGE_BASE: KnowledgeArticle[] = [
   {
-    id: "account-access",
-    title: "Problemas de acceso a la cuenta",
+    articleId: "account-access",
+    title: "Acceso a la cuenta",
+    answer:
+      "Para ingresar a tu cuenta, utiliza el correo registrado y tu contraseña en la pantalla de inicio de sesión. Si olvidaste tu contraseña, selecciona la opción de recuperación de contraseña. Nunca compartas tu contraseña ni códigos de verificación.",
     keywords: [
-      "no puedo ingresar",
-      "no puedo entrar",
+      "como ingreso a mi cuenta",
+      "cómo ingreso a mi cuenta",
+      "ingresar a mi cuenta",
+      "ingreso a mi cuenta",
+      "entrar a mi cuenta",
+      "acceder a mi cuenta",
+      "acceso a mi cuenta",
+      "iniciar sesion",
+      "inicio de sesion",
+      "iniciar sesión",
+      "inicio de sesión",
+      "como inicio sesion",
+      "cómo inicio sesión",
       "olvide mi contraseña",
       "olvidé mi contraseña",
       "recuperar contraseña",
-      "acceso a mi cuenta",
+      "cambiar contraseña",
+      "restablecer contraseña",
+      "no puedo iniciar sesion",
+      "no puedo iniciar sesión",
     ],
-    answer:
-      "Para recuperar el acceso, solicita el restablecimiento de contraseña desde la pantalla de inicio de sesión. Si no tienes acceso al correo registrado, el caso debe ser revisado por el equipo de soporte.",
   },
   {
-    id: "required-documents",
-    title: "Documentos requeridos",
+    articleId: "required-documents",
+    title: "Documentos para abrir una cuenta",
+    answer:
+      "Para abrir una cuenta debes presentar un documento de identidad válido y completar la información solicitada en el formulario de registro. Dependiendo del tipo de cuenta, podrían solicitarse documentos adicionales.",
     keywords: [
-      "documentos",
-      "requisitos",
+      "documentos para abrir una cuenta",
+      "que documentos necesito",
+      "qué documentos necesito",
+      "requisitos para abrir una cuenta",
+      "requisitos de apertura",
       "abrir una cuenta",
       "crear una cuenta",
-      "registro de cuenta",
+      "papeles para abrir una cuenta",
+      "cedula para abrir una cuenta",
+      "cédula para abrir una cuenta",
+      "pasaporte para abrir una cuenta",
     ],
-    answer:
-      "Para esta demostración, los documentos requeridos son una identificación vigente, comprobante de domicilio y formulario de datos del cliente. La validación definitiva debe realizarla el equipo responsable.",
   },
   {
-    id: "deposits-withdrawals",
+    articleId: "deposits-withdrawals",
     title: "Depósitos y retiros",
-    keywords: [
-      "deposito",
-      "depósito",
-      "depositar",
-      "retiro",
-      "retirar",
-      "transferir dinero",
-    ],
     answer:
-      "Los depósitos y retiros deben realizarse únicamente desde cuentas registradas a nombre del cliente. Los tiempos y validaciones pueden variar según el proceso operativo de la institución.",
+      "Puedes consultar los métodos disponibles de depósito y retiro desde la sección de movimientos de la plataforma. Los tiempos de procesamiento pueden depender del método utilizado.",
+    keywords: [
+      "como deposito dinero",
+      "cómo deposito dinero",
+      "hacer un deposito",
+      "hacer un depósito",
+      "depositar dinero",
+      "como retiro dinero",
+      "cómo retiro dinero",
+      "retirar dinero",
+      "hacer un retiro",
+      "metodos de deposito",
+      "métodos de depósito",
+      "tiempo de retiro",
+      "cuanto demora un retiro",
+      "cuánto demora un retiro",
+    ],
   },
   {
-    id: "fees",
-    title: "Comisiones y costos",
+    articleId: "fees",
+    title: "Comisiones y tarifas",
+    answer:
+      "Las comisiones dependen del servicio y del tipo de operación. Antes de confirmar una transferencia, revisa la tarifa mostrada por la plataforma. El agente no proporcionará valores que no estén registrados en la base de conocimiento.",
     keywords: [
-      "comision",
-      "comisión",
       "comisiones",
+      "comision",
+      "tarifas",
       "tarifa",
-      "costo",
       "costos",
+      "costo",
+      "costo transferencia",
+      "costo de transferencia",
+      "costo de una transferencia",
+      "cuanto cuesta transferir",
+      "cuanto cuesta una transferencia",
+      "precio de una transferencia",
+      "tarifa de transferencia",
+      "comision de transferencia",
+      "cobran por transferir",
+      "cobran por una transferencia",
+      "costo de retiro",
+      "cuanto cuesta retirar",
+      "cuota mensual",
     ],
-    answer:
-      "Las comisiones dependen del producto y de la operación solicitada. Antes de confirmar una operación, el sistema debe mostrar el costo aplicable. Para valores específicos se debe consultar el tarifario aprobado.",
   },
   {
-    id: "service-hours",
+    articleId: "service-hours",
     title: "Horarios de atención",
-    keywords: [
-      "horario",
-      "horarios",
-      "cuando atienden",
-      "cuándo atienden",
-      "atencion al cliente",
-      "atención al cliente",
-    ],
     answer:
-      "El asistente está disponible las 24 horas. Los casos escalados son atendidos por el equipo humano durante el horario operativo configurado para esta demostración.",
+      "Puedes consultar los horarios vigentes en la sección de contacto o soporte. Las solicitudes enviadas fuera del horario de atención serán revisadas en el siguiente periodo disponible.",
+    keywords: [
+      "horario de atencion",
+      "horario de atención",
+      "horarios de atencion",
+      "horarios de atención",
+      "atienden los sabados",
+      "atienden los sábados",
+      "atienden los domingos",
+      "hora de atencion",
+      "hora de atención",
+      "contactar soporte",
+      "servicio al cliente",
+    ],
   },
   {
-    id: "personal-data",
-    title: "Actualización de datos personales",
-    keywords: [
-      "actualizar datos",
-      "cambiar mis datos",
-      "cambiar correo",
-      "cambiar telefono",
-      "cambiar teléfono",
-      "datos personales",
-    ],
+    articleId: "personal-data",
+    title: "Datos personales y privacidad",
     answer:
-      "La actualización de datos personales requiere validar la identidad del cliente. El asistente puede iniciar la solicitud, pero el cambio debe ser aprobado por el equipo responsable.",
+      "Puedes consultar, actualizar o solicitar la revisión de tus datos personales mediante los canales de soporte autorizados. La información debe manejarse de acuerdo con la política de privacidad aplicable.",
+    keywords: [
+      "datos personales",
+      "mis datos",
+      "actualizar mis datos",
+      "eliminar mis datos",
+      "privacidad",
+      "politica de privacidad",
+      "política de privacidad",
+      "como usan mis datos",
+      "cómo usan mis datos",
+      "proteccion de datos",
+      "protección de datos",
+      "informacion personal",
+      "información personal",
+    ],
   },
 ];
 
@@ -103,33 +154,128 @@ function normalizeText(value: string): string {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
+    .replace(/[¿?¡!.,;:()"']/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
 }
 
-export function searchKnowledgeBase(
-  query: string,
-): KnowledgeSearchResult | null {
-  const normalizedQuery = normalizeText(query);
+const STOP_WORDS = new Set([
+  "a",
+  "al",
+  "de",
+  "del",
+  "el",
+  "es",
+  "la",
+  "las",
+  "los",
+  "para",
+  "por",
+  "que",
+  "un",
+  "una",
+  "unos",
+  "unas",
+  "cual",
+  "cuanto",
+]);
 
-  let bestResult: KnowledgeSearchResult | null = null;
-  let bestScore = 0;
-
-  for (const article of knowledgeBase) {
-    const matchedKeywords = article.keywords.filter((keyword) =>
-      normalizedQuery.includes(normalizeText(keyword)),
+function tokenize(value: string): string[] {
+  return normalizeText(value)
+    .split(" ")
+    .filter(
+      (token) =>
+        token.length > 1 &&
+        !STOP_WORDS.has(token),
     );
+}
 
-    if (matchedKeywords.length > bestScore) {
-      bestScore = matchedKeywords.length;
+function getKeywordScore(
+  normalizedMessage: string,
+  messageTokens: Set<string>,
+  keyword: string,
+): number {
+  const normalizedKeyword = normalizeText(keyword);
 
-      bestResult = {
-        articleId: article.id,
-        title: article.title,
-        answer: article.answer,
-        matchedKeywords,
-      };
-    }
+  /*
+   * Coincidencia exacta de la frase.
+   */
+  if (
+    normalizedMessage.includes(normalizedKeyword)
+  ) {
+    return 100 + normalizedKeyword.length;
   }
 
-  return bestScore > 0 ? bestResult : null;
+  /*
+   * Coincidencia por palabras significativas.
+   *
+   * "costo de transferencia" puede coincidir con
+   * "cuál es el costo de una transferencia".
+   */
+  const keywordTokens = tokenize(keyword);
+
+  if (keywordTokens.length === 0) {
+    return 0;
+  }
+
+  const allTokensPresent = keywordTokens.every(
+    (token) => messageTokens.has(token),
+  );
+
+  if (!allTokensPresent) {
+    return 0;
+  }
+
+  return 50 + keywordTokens.length * 10;
+}
+
+export function searchKnowledgeBase(
+  message: string,
+): KnowledgeSearchResult | null {
+  const normalizedMessage = normalizeText(message);
+
+  const messageTokens = new Set(
+    tokenize(message),
+  );
+
+  const results = APPROVED_KNOWLEDGE_BASE.map(
+    (article) => {
+      const keywordResults = article.keywords
+        .map((keyword) => ({
+          keyword,
+          score: getKeywordScore(
+            normalizedMessage,
+            messageTokens,
+            keyword,
+          ),
+        }))
+        .filter((result) => result.score > 0);
+
+      return {
+        article,
+        matchedKeywords: keywordResults.map(
+          (result) => result.keyword,
+        ),
+        score: keywordResults.reduce(
+          (total, result) =>
+            total + result.score,
+          0,
+        ),
+      };
+    },
+  )
+    .filter((result) => result.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  const bestMatch = results[0];
+
+  if (!bestMatch) {
+    return null;
+  }
+
+  return {
+    ...bestMatch.article,
+    matchedKeywords:
+      bestMatch.matchedKeywords,
+  };
 }
