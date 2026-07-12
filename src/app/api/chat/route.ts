@@ -14,7 +14,21 @@ export async function POST(
   request: Request,
 ): Promise<Response> {
   try {
-    const body: unknown = await request.json();
+    let body: unknown;
+
+    try {
+      body = await request.json();
+    } catch {
+      return Response.json(
+        {
+          ok: false,
+          error: "La solicitud debe contener un JSON válido.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
 
     const requestResult = ChatRequestSchema.safeParse(body);
 
@@ -35,14 +49,53 @@ export async function POST(
       requestResult.data.message,
     );
 
+    const previewConditions = {
+      correctIntent:
+        parsedMessage.intent === "register_transaction",
+
+      validTransactionType:
+        parsedMessage.transactionType !== "not_applicable",
+
+      validAmount:
+        parsedMessage.amount > 0,
+
+      validCategory:
+        parsedMessage.category !== "not_applicable",
+
+      noMissingFields:
+        parsedMessage.missingFields.length === 0,
+    };
+
+    const canConfirmTransaction =
+      previewConditions.correctIntent &&
+      previewConditions.validTransactionType &&
+      previewConditions.validAmount &&
+      previewConditions.validCategory &&
+      previewConditions.noMissingFields;
+
+    const transactionPreview = canConfirmTransaction
+      ? {
+          transactionType: parsedMessage.transactionType,
+          amount: parsedMessage.amount,
+          currency: parsedMessage.currency,
+          date: parsedMessage.date,
+          category: parsedMessage.category,
+          merchant: parsedMessage.merchant,
+          notes: "",
+        }
+      : null;
+
     return Response.json({
       ok: true,
-      data: parsedMessage,
+      data: {
+        ...parsedMessage,
+        transactionPreview,
+      },
     });
   } catch (error) {
     console.error("Error en POST /api/chat:", error);
 
-    const message =
+    const details =
       error instanceof Error
         ? error.message
         : "Ocurrió un error desconocido.";
@@ -53,7 +106,7 @@ export async function POST(
         error: "No fue posible procesar el mensaje.",
         details:
           process.env.NODE_ENV === "development"
-            ? message
+            ? details
             : undefined,
       },
       {
