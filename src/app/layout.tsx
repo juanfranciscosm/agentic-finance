@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Saldo AI",
+  title: "AIROS Financial Agent",
   description:
-    "Agente inteligente para finanzas personales y soporte financiero.",
+    "Agente inteligente de AIROS para finanzas personales, presupuestos y soporte financiero.",
 };
 
 export default function RootLayout({
