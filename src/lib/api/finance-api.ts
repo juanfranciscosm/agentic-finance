@@ -4,6 +4,7 @@ import type {
   BudgetStatus,
   ChatData,
   FinancialSummary,
+  RecentTransaction,
   StoredTicket,
   TicketPreview,
   TicketResponse,
@@ -120,3 +121,16 @@ export async function getTickets(): Promise<StoredTicket[]> {
 
   return response.tickets;
 }
+
+export async function getRecentTransactions(
+  limit = 8,
+): Promise<RecentTransaction[]> {
+  const response = await apiRequest<{
+    ok: true;
+    transactions: RecentTransaction[];
+  }>(`/api/transactions?limit=${limit}`);
+
+  return response.transactions;
+}
+
+

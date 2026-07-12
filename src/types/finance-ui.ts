@@ -4,6 +4,18 @@ export interface FinancialSummary {
   balance: number;
 }
 
+export interface RecentTransaction {
+  id: string;
+  transactionType: "expense" | "income";
+  amount: number;
+  currency: "USD";
+  date: string;
+  category: string;
+  merchant: string | null;
+  notes: string | null;
+  createdAt: string;
+}
+
 export interface TransactionPreview {
   transactionType: "expense" | "income";
   amount: number;
@@ -100,6 +112,7 @@ export interface ChatData {
   transactionPreview: TransactionPreview | null;
   budgetPreview: BudgetPreview | null;
   supportResult: SupportResult | null;
+  summaryData: FinancialSummary | null;
 }
 
 export interface BudgetAlert {
@@ -110,17 +123,7 @@ export interface BudgetAlert {
 export interface TransactionResponse {
   ok: true;
   message: string;
-  transaction: {
-    id: string;
-    transactionType: "expense" | "income";
-    amount: number;
-    currency: "USD";
-    date: string;
-    category: string;
-    merchant: string | null;
-    notes: string | null;
-    createdAt: string;
-  };
+  transaction: RecentTransaction;
   summary: FinancialSummary;
   budgetStatus: BudgetStatus | null;
   budgetAlert: BudgetAlert | null;

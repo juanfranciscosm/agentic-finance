@@ -3,6 +3,7 @@ import { z } from "zod";
 import { parseFinancialMessage } from "@/lib/ai/parse-financial-message";
 import { getCurrentEcuadorMonth } from "@/lib/finance/budget-schema";
 import { routeSupportMessage } from "@/lib/support/support-router";
+import { getFinancialSummary } from "@/lib/database/transactions";
 
 const ChatRequestSchema = z.object({
   message: z
@@ -11,6 +12,14 @@ const ChatRequestSchema = z.object({
     .min(1, "El mensaje no puede estar vacío.")
     .max(1000, "El mensaje es demasiado largo."),
 });
+
+
+function formatUsd(value: number): string {
+  return new Intl.NumberFormat("es-EC", {
+    style: "currency",
+    currency: "USD",
+  }).format(value);
+}
 
 export async function POST(
   request: Request,
@@ -98,6 +107,12 @@ export async function POST(
         }
       : null;
 
+    const summaryData =
+      parsedMessage.intent ===
+      "get_financial_summary"
+        ? await getFinancialSummary()
+        : null;
+
     // Para soporte, Gemini solo clasifica.
     // La respuesta final proviene de la base aprobada.
     const shouldRouteToSupport =
@@ -111,9 +126,17 @@ export async function POST(
         )
       : null;
 
-    const finalReply =
+    let finalReply =
       supportResult?.reply ??
       parsedMessage.reply;
+
+    if (summaryData) {
+      finalReply =
+        `Tu resumen financiero actual es: ` +
+        `ingresos ${formatUsd(summaryData.income)}, ` +
+        `gastos ${formatUsd(summaryData.expenses)} y ` +
+        `saldo ${formatUsd(summaryData.balance)}.`;
+    }
 
     return Response.json({
       ok: true,
@@ -123,6 +146,7 @@ export async function POST(
         transactionPreview,
         budgetPreview,
         supportResult,
+        summaryData,
       },
     });
   } catch (error) {

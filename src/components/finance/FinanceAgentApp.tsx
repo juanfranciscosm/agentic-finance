@@ -11,6 +11,7 @@ import {
   createTicket,
   getBudgets,
   getFinancialSummary,
+  getRecentTransactions,
   getTickets,
   registerTransaction,
   saveBudget,
@@ -21,6 +22,7 @@ import type {
   BudgetStatus,
   ChatData,
   FinancialSummary,
+  RecentTransaction,
   StoredTicket,
 } from "@/types/finance-ui";
 
@@ -104,10 +106,13 @@ export default function FinanceAgentApp() {
 
   const [budgets, setBudgets] = useState<BudgetStatus[]>([]);
   const [tickets, setTickets] = useState<StoredTicket[]>([]);
+  const [recentTransactions, setRecentTransactions,] = useState<RecentTransaction[]>([]);
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [dashboardError, setDashboardError] = useState("");
 
+  
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
 
   useEffect(() => {
     let cancelled = false;
@@ -115,13 +120,15 @@ export default function FinanceAgentApp() {
     async function loadDashboard(): Promise<void> {
       try {
         const [
-          financialSummary,
-          budgetStatuses,
-          supportTickets,
+            financialSummary,
+            budgetStatuses,
+            supportTickets,
+            transactions,
         ] = await Promise.all([
-          getFinancialSummary(),
-          getBudgets(),
-          getTickets(),
+            getFinancialSummary(),
+            getBudgets(),
+            getTickets(),
+            getRecentTransactions(),
         ]);
 
         if (cancelled) {
@@ -131,6 +138,7 @@ export default function FinanceAgentApp() {
         setSummary(financialSummary);
         setBudgets(budgetStatuses);
         setTickets(supportTickets);
+        setRecentTransactions(transactions);
       } catch (error) {
         if (!cancelled) {
           setDashboardError(
@@ -217,6 +225,10 @@ export default function FinanceAgentApp() {
     try {
       const response = await sendChatMessage(messageText);
 
+      if (response.summaryData) {
+        setSummary(response.summaryData);
+      }
+
       setMessages((current) => [
         ...current,
         {
@@ -253,6 +265,13 @@ export default function FinanceAgentApp() {
       const response = await registerTransaction(preview);
 
       setSummary(response.summary);
+      setRecentTransactions((current) => [
+        response.transaction,
+        ...current.filter(
+            (item) =>
+            item.id !== response.transaction.id,
+        ),
+      ].slice(0, 8));
       await refreshBudgets();
 
       updateActionState(message.id, "completed");
@@ -684,6 +703,64 @@ export default function FinanceAgentApp() {
                 )}
               </div>
             </section>
+            
+            <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                <h2 className="font-semibold">
+                    Transacciones recientes
+                </h2>
+
+                <p className="mb-4 text-sm text-slate-500">
+                    Últimos ingresos y gastos confirmados.
+                </p>
+
+                <div className="space-y-3">
+                    {recentTransactions.length === 0 ? (
+                    <p className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
+                        Todavía no existen transacciones.
+                    </p>
+                    ) : (
+                    recentTransactions.map((transaction) => (
+                        <div
+                        key={transaction.id}
+                        className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 p-4"
+                        >
+                        <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold">
+                            {transaction.merchant ||
+                                getCategoryLabel(
+                                transaction.category,
+                                )}
+                            </p>
+
+                            <p className="mt-1 text-xs text-slate-500">
+                            {getCategoryLabel(
+                                transaction.category,
+                            )}{" "}
+                            · {transaction.date}
+                            </p>
+                        </div>
+
+                        <p
+                            className={
+                            transaction.transactionType ===
+                            "income"
+                                ? "whitespace-nowrap text-sm font-bold text-emerald-600"
+                                : "whitespace-nowrap text-sm font-bold text-red-600"
+                            }
+                        >
+                            {transaction.transactionType ===
+                            "income"
+                            ? "+"
+                            : "-"}
+                            {formatCurrency(transaction.amount)}
+                        </p>
+                        </div>
+                    ))
+                    )}
+                </div>
+            </section>
+
+        
 
             <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
               <h2 className="font-semibold">

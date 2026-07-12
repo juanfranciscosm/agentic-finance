@@ -7,6 +7,7 @@ import {
 import {
   createTransaction,
   getFinancialSummary,
+  listRecentTransactions,
 } from "@/lib/database/transactions";
 
 export async function POST(
@@ -87,6 +88,69 @@ export async function POST(
       {
         ok: false,
         error: "No fue posible registrar la transacción.",
+        details:
+          process.env.NODE_ENV === "development"
+            ? details
+            : undefined,
+      },
+      {
+        status: 500,
+      },
+    );
+  }
+}
+
+export async function GET(
+  request: Request,
+): Promise<Response> {
+  try {
+    const url = new URL(request.url);
+    const rawLimit = url.searchParams.get("limit");
+
+    const limit = rawLimit
+      ? Number(rawLimit)
+      : 8;
+
+    if (
+      !Number.isInteger(limit) ||
+      limit < 1 ||
+      limit > 20
+    ) {
+      return Response.json(
+        {
+          ok: false,
+          error:
+            "El límite debe ser un número entero entre 1 y 20.",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const transactions =
+      await listRecentTransactions(limit);
+
+    return Response.json({
+      ok: true,
+      transactions,
+    });
+  } catch (error) {
+    console.error(
+      "Error en GET /api/transactions:",
+      error,
+    );
+
+    const details =
+      error instanceof Error
+        ? error.message
+        : "Error desconocido.";
+
+    return Response.json(
+      {
+        ok: false,
+        error:
+          "No fue posible consultar las transacciones.",
         details:
           process.env.NODE_ENV === "development"
             ? details

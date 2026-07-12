@@ -135,3 +135,61 @@ export async function getFinancialSummary(): Promise<FinancialSummary> {
     balance: Number(summary.balance.toFixed(2)),
   };
 }
+
+export async function listRecentTransactions(
+  limit = 8,
+): Promise<StoredTransaction[]> {
+  const supabase = getSupabaseAdmin();
+  const userId = getDemoUserId();
+
+  const safeLimit = Math.min(
+    Math.max(Math.trunc(limit), 1),
+    20,
+  );
+
+  const { data, error } = await supabase
+    .from("transactions")
+    .select(
+      `
+        id,
+        transaction_type,
+        amount,
+        currency,
+        transaction_date,
+        category,
+        merchant,
+        notes,
+        created_at
+      `,
+    )
+    .eq("user_id", userId)
+    .order("transaction_date", {
+      ascending: false,
+    })
+    .order("created_at", {
+      ascending: false,
+    })
+    .limit(safeLimit);
+
+  if (error) {
+    throw new Error(
+      `No fue posible consultar las transacciones: ${error.message}`,
+    );
+  }
+
+  return (data ?? []).map((item) => {
+    const row = item as TransactionRow;
+
+    return {
+      id: row.id,
+      transactionType: row.transaction_type,
+      amount: Number(row.amount),
+      currency: row.currency,
+      date: row.transaction_date,
+      category: row.category,
+      merchant: row.merchant,
+      notes: row.notes,
+      createdAt: row.created_at,
+    };
+  });
+}
