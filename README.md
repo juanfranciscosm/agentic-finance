@@ -95,7 +95,7 @@ Falta para la alerta: $30
 Disponible total: $60
 ```
 
-![ejemplo3](ejemplo3.png)
+![ejemplo3](public/ejemplo3.png)
 
 
 ### Historia 3: soporte y escalamiento humano
@@ -111,7 +111,7 @@ La base aprobada responde preguntas como:
 ¿Cómo puedo proteger mi cuenta?
 ```
 
-![ejemplo4](ejemplo4.png)
+![ejemplo4](public/ejemplo4.png)
 
 
 Los casos sensibles generan una vista previa de ticket:
@@ -122,7 +122,7 @@ Están intentando hackear mi cuenta
 Alguien ingresó a mi cuenta sin autorización
 ```
 
-![ejemplo5](ejemplo5.png)
+![ejemplo5](public/ejemplo5.png)
 
 Cada ticket incluye resumen, categoría, prioridad, motivo y contexto reciente.
 
@@ -148,7 +148,7 @@ Categoría: Alimentación
 Fecha: ayer
 ```
 
-![ejemplo6](ejemplo6.png)
+![ejemplo6](public/ejemplo6.png)
 
 También funciona con preguntas de seguimiento:
 
@@ -158,9 +158,9 @@ Agente: ...
 Usuario: ¿Y cuánto demora?
 ```
 
-![ejemplo7](ejemplo7.png)
+![ejemplo7](public/ejemplo7.png)
 
-![ejemplo8](ejemplo8.png)
+![ejemplo8](public/ejemplo8.png)
 
 El historial visual se conserva en `sessionStorage` durante la sesión de la pestaña.
 
