@@ -3,6 +3,7 @@ import type {
   BudgetResponse,
   BudgetStatus,
   ChatData,
+  ConversationTurn,
   FinancialSummary,
   RecentTransaction,
   StoredTicket,
@@ -53,13 +54,17 @@ async function apiRequest<T>(
 
 export async function sendChatMessage(
   message: string,
+  history: ConversationTurn[] = [],
 ): Promise<ChatData> {
   const response = await apiRequest<{
     ok: true;
     data: ChatData;
   }>("/api/chat", {
     method: "POST",
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({
+      message,
+      history: history.slice(-10),
+    }),
   });
 
   return response.data;

@@ -19,6 +19,7 @@ import {
 
 import type {
   BudgetStatus,
+  ConversationTurn,
   FinancialSummary,
   RecentTransaction,
   StoredTicket,
@@ -41,16 +42,28 @@ import {
   createId,
 } from "./utils";
 
+const CHAT_STORAGE_KEY =
+  "airos-financial-agent-chat";
+
+const INITIAL_MESSAGES: UiMessage[] = [
+  {
+    id: "welcome",
+    role: "assistant",
+    content:
+      "Hola, soy AIROS Financial Agent. Puedo registrar tus ingresos y gastos, crear presupuestos, explicar tus alertas financieras y ayudarte con consultas de soporte.",
+  },
+];
+
 export default function FinanceAgentApp() {
   const [messages, setMessages] =
-    useState<UiMessage[]>([
-      {
-        id: "welcome",
-        role: "assistant",
-        content:
-          "Hola, soy AIROS Financial Agent. Puedo registrar tus ingresos y gastos, crear presupuestos, explicar tus alertas financieras y ayudarte con consultas de soporte.",
-      },
-    ]);
+      useState<UiMessage[]>(
+        INITIAL_MESSAGES,
+      );
+
+    const [
+      chatHydrated,
+      setChatHydrated,
+    ] = useState(false);
 
   const [input, setInput] =
     useState("");
@@ -85,6 +98,71 @@ export default function FinanceAgentApp() {
     dashboardError,
     setDashboardError,
   ] = useState("");
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      try {
+        const storedMessages =
+          sessionStorage.getItem(
+            CHAT_STORAGE_KEY,
+          );
+
+        if (storedMessages) {
+          const parsed: unknown =
+            JSON.parse(storedMessages);
+
+          if (
+            Array.isArray(parsed) &&
+            parsed.length > 0
+          ) {
+            setMessages(
+              parsed as UiMessage[],
+            );
+          }
+        }
+      } catch {
+        sessionStorage.removeItem(
+          CHAT_STORAGE_KEY,
+        );
+      } finally {
+        setChatHydrated(true);
+      }
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!chatHydrated) {
+      return;
+    }
+
+    /*
+    * Solo guardamos texto y rol.
+    * No conservamos botones de confirmación antiguos,
+    * porque podrían ejecutar dos veces una operación.
+    */
+    const safeMessages =
+      messages
+        .slice(-30)
+        .map((message) => ({
+          id: message.id,
+          role: message.role,
+          content: message.content,
+        }));
+
+    sessionStorage.setItem(
+      CHAT_STORAGE_KEY,
+      JSON.stringify(
+        safeMessages,
+      ),
+    );
+  }, [
+    messages,
+    chatHydrated,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -200,10 +278,25 @@ export default function FinanceAgentApp() {
     setInput("");
     setSending(true);
 
+  
     try {
+      const conversationHistory:
+        ConversationTurn[] =
+        messages
+          .filter(
+            (message) =>
+              message.id !== "welcome",
+          )
+          .slice(-10)
+          .map((message) => ({
+            role: message.role,
+            content: message.content,
+          }));
+
       const response =
         await sendChatMessage(
           messageText,
+          conversationHistory,
         );
 
       if (response.summaryData) {
@@ -414,6 +507,16 @@ export default function FinanceAgentApp() {
     );
   }
 
+  function clearConversation(): void {
+  setMessages(
+    INITIAL_MESSAGES,
+  );
+
+  sessionStorage.removeItem(
+    CHAT_STORAGE_KEY,
+  );
+}
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(83,197,233,0.16),transparent_32%),linear-gradient(to_bottom,#f8fbfc,#edf3f6)] px-4 py-6 text-[#2f3841] sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
@@ -426,32 +529,27 @@ export default function FinanceAgentApp() {
             sending={sending}
             onInputChange={setInput}
             onSubmit={(event) =>
-              void handleSendMessage(
-                event,
-              )
+              void handleSendMessage(event)
             }
-            onConfirmTransaction={(
-              message,
-            ) =>
+            onConfirmTransaction={(message) =>
               void handleTransactionConfirmation(
                 message,
               )
             }
-            onConfirmBudget={(
-              message,
-            ) =>
+            onConfirmBudget={(message) =>
               void handleBudgetConfirmation(
                 message,
               )
             }
-            onConfirmTicket={(
-              message,
-            ) =>
+            onConfirmTicket={(message) =>
               void handleTicketConfirmation(
                 message,
               )
             }
             onCancel={cancelAction}
+            onClearConversation={
+              clearConversation
+            }
           />
 
           <DashboardSidebar
@@ -471,3 +569,4 @@ export default function FinanceAgentApp() {
     </main>
   );
 }
+

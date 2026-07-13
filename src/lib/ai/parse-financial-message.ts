@@ -4,6 +4,10 @@ import {
   type ParsedFinancialMessage,
 } from "@/lib/ai/schemas";
 
+import type {
+  ConversationTurn,
+} from "@/types/finance-ui";
+
 import {
   GEMINI_FALLBACK_MODEL,
   GEMINI_MODEL,
@@ -20,6 +24,28 @@ const interpretationCache = new Map<
   string,
   ParsedFinancialMessage
 >();
+
+function buildConversationContext(
+    history: ConversationTurn[],
+  ): string {
+    const recentHistory =
+      history.slice(-10);
+
+    if (recentHistory.length === 0) {
+      return "No hay mensajes anteriores.";
+    }
+
+    return recentHistory
+      .map((turn) => {
+        const speaker =
+          turn.role === "user"
+            ? "Usuario"
+            : "Asistente";
+
+        return `${speaker}: ${turn.content}`;
+      })
+      .join("\n");
+}
 
 function getCurrentEcuadorDate(): string {
   return new Intl.DateTimeFormat("en-CA", {
@@ -72,14 +98,29 @@ function parseGeminiJson(outputText: string): unknown {
 
 export async function parseFinancialMessage(
   message: string,
+  history: ConversationTurn[] = [],
 ): Promise<ParsedFinancialMessage> {
   const cleanMessage = message.trim();
+
+  const recentHistory =
+    history.slice(-10);
+
+  const conversationContext =
+    buildConversationContext(
+      recentHistory,
+    );
 
   if (!cleanMessage) {
     throw new Error("El mensaje no puede estar vacío.");
   }
 
-  const cacheKey = normalizeCacheKey(cleanMessage);
+  const cacheKey =
+  normalizeCacheKey(
+    [
+      conversationContext,
+      `Mensaje actual: ${cleanMessage}`,
+    ].join("\n"),
+  );
   const cachedResult = interpretationCache.get(cacheKey);
 
   if (cachedResult) {
@@ -153,6 +194,15 @@ RESUMEN FINANCIERO:
   get_financial_summary.
 - No inventes valores del resumen. El código consultará la base de datos.
 
+USO DEL HISTORIAL:
+- Utiliza el historial únicamente para interpretar referencias y completar solicitudes pendientes.
+- El mensaje actual es la instrucción principal.
+- Si el usuario responde con información breve como "comida", "$100", "ayer" o "al 75%", completa la operación pendiente más reciente.
+- No recuperes datos de una operación que ya fue confirmada, completada o cancelada.
+- No mezcles dos transacciones o presupuestos diferentes.
+- No inventes datos que no aparezcan en el mensaje actual o en el historial.
+- Si existe ambigüedad entre varias operaciones anteriores, solicita aclaración.
+
 SOPORTE Y CONSULTAS SENSIBLES:
 - Marca isSensitive=true cuando el mensaje trate sobre:
   - fraude;
@@ -186,7 +236,13 @@ RESPUESTA:
 - No uses markdown dentro de reply.
 `,
 
-      input: cleanMessage,
+      input: `
+        HISTORIAL RECIENTE:
+        ${conversationContext}
+
+        MENSAJE ACTUAL DEL USUARIO:
+        ${cleanMessage}
+        `,
 
       response_format: {
         type: "text",

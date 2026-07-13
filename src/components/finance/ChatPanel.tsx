@@ -44,6 +44,9 @@ interface ChatPanelProps {
   onCancel: (
     messageId: string,
   ) => void;
+
+  onClearConversation: () => void;
+
 }
 
 export default function ChatPanel({
@@ -56,6 +59,7 @@ export default function ChatPanel({
   onConfirmBudget,
   onConfirmTicket,
   onCancel,
+  onClearConversation,
 }: ChatPanelProps) {
   const messagesEndRef =
     useRef<HTMLDivElement | null>(null);
@@ -70,7 +74,7 @@ export default function ChatPanel({
     <section className="flex h-[75dvh] min-h-[560px] flex-col overflow-hidden rounded-3xl border border-[#2a597033] bg-white shadow-[0_18px_50px_rgba(47,56,65,0.10)] lg:sticky lg:top-6 lg:h-[calc(100dvh-3rem)] lg:min-h-0">
       <div className="shrink-0 border-b border-slate-200 bg-white px-5 py-4">
         <div className="flex items-center gap-3">
-          <span className="h-9 w-1 rounded-full bg-[#53c5e9]" />
+          <span className="h-9 w-1 shrink-0 rounded-full bg-[#53c5e9]" />
 
           <div>
             <h2 className="font-semibold text-[#2f3841]">
@@ -81,7 +85,16 @@ export default function ChatPanel({
               Describe una operación que quieras realizar.
             </p>
           </div>
+
+          <button
+            type="button"
+            onClick={onClearConversation}
+            className="ml-auto shrink-0 rounded-xl border border-[#2a597033] px-3 py-2 text-xs font-semibold text-[#2a5970] transition hover:border-[#53c5e9] hover:bg-[#53c5e914]"
+          >
+            Nueva conversación
+          </button>
         </div>
+        
       </div>
 
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain bg-[#f7fafb] p-4 sm:p-6">

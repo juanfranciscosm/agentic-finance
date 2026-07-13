@@ -266,6 +266,10 @@ export default function DashboardSidebar({
           )}
         </div>
       </Panel>
+      <p className="mt-2 text-xs text-slate-500">
+            Prototipo demostrativo. Las tarifas, límites y políticas mostradas
+            son datos ficticios y no representan una institución financiera real.
+          </p>
     </aside>
   );
 }

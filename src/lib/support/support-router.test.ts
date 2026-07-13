@@ -202,4 +202,129 @@ it("mantiene como informativa una pregunta normal de acceso", () => {
     "knowledge_answer",
   );
 });
+it("responde con tarifas concretas", () => {
+  const result = searchKnowledgeBase(
+    "¿Cuánto cuesta una transferencia?",
+  );
+
+  expect(result).not.toBeNull();
+  expect(result?.articleId).toBe("fees");
+  expect(result?.answer).toContain("$0,50");
+});
+
+it("explica cuánto demora un retiro", () => {
+  const result = searchKnowledgeBase(
+    "¿Cuánto demora un retiro?",
+  );
+
+  expect(result).not.toBeNull();
+  expect(result?.articleId).toBe(
+    "deposits-withdrawals",
+  );
+  expect(result?.answer).toContain(
+    "1 y 2 días laborables",
+  );
+});
+
+it("responde consejos preventivos de seguridad", () => {
+  const result = searchKnowledgeBase(
+    "¿Cómo puedo proteger mi cuenta?",
+  );
+
+  expect(result).not.toBeNull();
+  expect(result?.articleId).toBe(
+    "account-security-guidance",
+  );
+});
+
+it("indica los horarios concretos", () => {
+  const result = searchKnowledgeBase(
+    "¿Atienden los sábados?",
+  );
+
+  expect(result).not.toBeNull();
+  expect(result?.articleId).toBe(
+    "service-hours",
+  );
+  expect(result?.answer).toContain(
+    "09:00 a 13:00",
+  );
+});
+
+it("responde una pregunta de seguimiento usando el historial", () => {
+  const result =
+    routeSupportMessage(
+      "¿Y cuánto demora?",
+      false,
+      [
+        {
+          role: "user",
+          content:
+            "¿Cómo retiro dinero?",
+        },
+        {
+          role: "assistant",
+          content:
+            "Puedes realizar un retiro a una cuenta bancaria.",
+        },
+      ],
+    );
+
+  expect(result.type).toBe(
+    "knowledge_answer",
+  );
+
+  if (
+    result.type ===
+    "knowledge_answer"
+  ) {
+    expect(
+      result.article.articleId,
+    ).toBe(
+      "deposits-withdrawals",
+    );
+  }
+});
+
+it("incluye los mensajes anteriores en el ticket", () => {
+  const result =
+    routeSupportMessage(
+      "No fui yo",
+      true,
+      [
+        {
+          role: "user",
+          content:
+            "Veo una transferencia de $500.",
+        },
+        {
+          role: "assistant",
+          content:
+            "¿Reconoces esa transferencia?",
+        },
+      ],
+    );
+
+  expect(result.type).toBe(
+    "ticket_preview",
+  );
+
+  if (
+    result.type ===
+    "ticket_preview"
+  ) {
+    expect(
+      result.ticketPreview
+        .conversationContext,
+    ).toHaveLength(4);
+
+    expect(
+      result.ticketPreview
+        .conversationContext[0]
+        .content,
+    ).toContain(
+      "transferencia de $500",
+    );
+  }
+});
 });

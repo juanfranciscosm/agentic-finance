@@ -50,6 +50,34 @@ function normalizeText(value: string): string {
     .toLowerCase();
 }
 
+function searchKnowledgeWithHistory(
+  message: string,
+  history: ConversationContextItem[],
+): KnowledgeSearchResult | null {
+  const directMatch =
+    searchKnowledgeBase(message);
+
+  if (directMatch) {
+    return directMatch;
+  }
+
+  const previousUserMessage =
+    [...history]
+      .reverse()
+      .find(
+        (turn) =>
+          turn.role === "user",
+      );
+
+  if (!previousUserMessage) {
+    return null;
+  }
+
+  return searchKnowledgeBase(
+    `${previousUserMessage.content} ${message}`,
+  );
+}
+
 function includesAny(
   normalizedMessage: string,
   expressions: string[],
@@ -370,8 +398,13 @@ function buildSummary(message: string): string {
 export function routeSupportMessage(
   message: string,
   isSensitive: boolean,
+  history: ConversationContextItem[] = [],
 ): SupportResult {
-  const article = searchKnowledgeBase(message);
+  const article =
+    searchKnowledgeWithHistory(
+      message,
+      history,
+    );
 
   const explicitlySensitive =
     isExplicitlySensitive(message);
@@ -410,6 +443,7 @@ export function routeSupportMessage(
         ? "Consulta sensible que requiere revisión humana."
         : "No existe una respuesta aprobada en la base de conocimiento.",
       conversationContext: [
+        ...history.slice(-8),
         {
           role: "user",
           content: message,

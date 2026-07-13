@@ -27,6 +27,7 @@ export default function FinanceHeader() {
           <p className="mt-1 text-sm text-slate-600">
             Asistente de finanzas personales y soporte para clientes bancarios.
           </p>
+          
         </div>
       </div>
     </header>

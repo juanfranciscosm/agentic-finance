@@ -5,13 +5,35 @@ import { getCurrentEcuadorMonth } from "@/lib/finance/budget-schema";
 import { routeSupportMessage } from "@/lib/support/support-router";
 import { getFinancialSummary } from "@/lib/database/transactions";
 
-const ChatRequestSchema = z.object({
-  message: z
-    .string()
-    .trim()
-    .min(1, "El mensaje no puede estar vacío.")
-    .max(1000, "El mensaje es demasiado largo."),
-});
+
+const ConversationTurnSchema =
+  z.object({
+    role: z.enum([
+      "user",
+      "assistant",
+    ]),
+    content: z
+      .string()
+      .trim()
+      .min(1)
+      .max(2000),
+  });
+
+const ChatRequestSchema =
+  z.object({
+    message: z
+      .string()
+      .trim()
+      .min(1)
+      .max(2000),
+
+    history: z
+      .array(
+        ConversationTurnSchema,
+      )
+      .max(10)
+      .default([]),
+  });
 
 
 function formatUsd(value: number): string {
@@ -33,7 +55,8 @@ export async function POST(
       return Response.json(
         {
           ok: false,
-          error: "La solicitud debe contener un JSON válido.",
+          error:
+            "La solicitud debe contener un JSON válido.",
         },
         {
           status: 400,
@@ -41,14 +64,17 @@ export async function POST(
       );
     }
 
-    const requestResult = ChatRequestSchema.safeParse(body);
+    const requestResult =
+      ChatRequestSchema.safeParse(body);
 
     if (!requestResult.success) {
       return Response.json(
         {
           ok: false,
-          error: "El mensaje enviado no es válido.",
-          details: requestResult.error.issues,
+          error:
+            "El mensaje o el historial enviado no es válido.",
+          details:
+            requestResult.error.issues,
         },
         {
           status: 400,
@@ -56,32 +82,56 @@ export async function POST(
       );
     }
 
-    const userMessage = requestResult.data.message;
+    const {
+      message: userMessage,
+      history,
+    } = requestResult.data;
 
+    /*
+     * Gemini interpreta el mensaje actual utilizando
+     * el historial reciente de la conversación.
+     */
     const parsedMessage =
-      await parseFinancialMessage(userMessage);
+      await parseFinancialMessage(
+        userMessage,
+        history,
+      );
 
-    // Vista previa de una transacción.
+    /*
+     * Vista previa de una transacción.
+     */
     const canConfirmTransaction =
-      parsedMessage.intent === "register_transaction" &&
-      parsedMessage.transactionType !== "not_applicable" &&
+      parsedMessage.intent ===
+        "register_transaction" &&
+      parsedMessage.transactionType !==
+        "not_applicable" &&
       parsedMessage.amount > 0 &&
-      parsedMessage.category !== "not_applicable" &&
+      parsedMessage.category !==
+        "not_applicable" &&
       parsedMessage.missingFields.length === 0;
 
-    const transactionPreview = canConfirmTransaction
-      ? {
-          transactionType: parsedMessage.transactionType,
-          amount: parsedMessage.amount,
-          currency: parsedMessage.currency,
-          date: parsedMessage.date,
-          category: parsedMessage.category,
-          merchant: parsedMessage.merchant,
-          notes: "",
-        }
-      : null;
+    const transactionPreview =
+      canConfirmTransaction
+        ? {
+            transactionType:
+              parsedMessage.transactionType,
+            amount:
+              parsedMessage.amount,
+            currency:
+              parsedMessage.currency,
+            date:
+              parsedMessage.date,
+            category:
+              parsedMessage.category,
+            merchant:
+              parsedMessage.merchant,
+            notes: "",
+          }
+        : null;
 
-    // Vista previa de un presupuesto.
+    /*
+     * Vista previa de un presupuesto.
+     */
     const missingBudgetInformation =
       parsedMessage.missingFields.includes(
         "budgetAmount",
@@ -91,51 +141,80 @@ export async function POST(
       );
 
     const canConfirmBudget =
-      parsedMessage.intent === "create_budget" &&
+      parsedMessage.intent ===
+        "create_budget" &&
       parsedMessage.budgetAmount > 0 &&
       parsedMessage.budgetCategory !==
         "not_applicable" &&
       !missingBudgetInformation;
 
-    const budgetPreview = canConfirmBudget
-      ? {
-          category: parsedMessage.budgetCategory,
-          monthlyLimit: parsedMessage.budgetAmount,
-          thresholdPercent:
-            parsedMessage.budgetThresholdPercent,
-          month: getCurrentEcuadorMonth(),
-        }
-      : null;
+    const budgetPreview =
+      canConfirmBudget
+        ? {
+            category:
+              parsedMessage.budgetCategory,
+            monthlyLimit:
+              parsedMessage.budgetAmount,
+            thresholdPercent:
+              parsedMessage
+                .budgetThresholdPercent,
+            month:
+              getCurrentEcuadorMonth(),
+          }
+        : null;
 
+    /*
+     * Los valores del resumen financiero se obtienen
+     * de Supabase, no son generados por Gemini.
+     */
     const summaryData =
       parsedMessage.intent ===
       "get_financial_summary"
         ? await getFinancialSummary()
         : null;
 
-    // Para soporte, Gemini solo clasifica.
-    // La respuesta final proviene de la base aprobada.
+    /*
+     * Gemini clasifica la intención, pero las respuestas
+     * de soporte se obtienen de la base aprobada.
+     *
+     * El historial permite comprender preguntas de
+     * seguimiento como: "¿Y cuánto demora?".
+     */
     const shouldRouteToSupport =
-      parsedMessage.intent === "support_question" ||
-      parsedMessage.intent === "unknown";
+      parsedMessage.intent ===
+        "support_question" ||
+      parsedMessage.intent ===
+        "unknown";
 
-    const supportResult = shouldRouteToSupport
-      ? routeSupportMessage(
-          userMessage,
-          parsedMessage.isSensitive,
-        )
-      : null;
+    const supportResult =
+      shouldRouteToSupport
+        ? routeSupportMessage(
+            userMessage,
+            parsedMessage.isSensitive,
+            history,
+          )
+        : null;
 
     let finalReply =
       supportResult?.reply ??
       parsedMessage.reply;
 
+    /*
+     * Se reemplaza cualquier respuesta generada por
+     * Gemini con el resumen determinista de Supabase.
+     */
     if (summaryData) {
       finalReply =
         `Tu resumen financiero actual es: ` +
-        `ingresos ${formatUsd(summaryData.income)}, ` +
-        `gastos ${formatUsd(summaryData.expenses)} y ` +
-        `saldo ${formatUsd(summaryData.balance)}.`;
+        `ingresos ${formatUsd(
+          summaryData.income,
+        )}, ` +
+        `gastos ${formatUsd(
+          summaryData.expenses,
+        )} y ` +
+        `saldo ${formatUsd(
+          summaryData.balance,
+        )}.`;
     }
 
     return Response.json({
@@ -163,9 +242,11 @@ export async function POST(
     return Response.json(
       {
         ok: false,
-        error: "No fue posible procesar el mensaje.",
+        error:
+          "No fue posible procesar el mensaje.",
         details:
-          process.env.NODE_ENV === "development"
+          process.env.NODE_ENV ===
+          "development"
             ? details
             : undefined,
       },

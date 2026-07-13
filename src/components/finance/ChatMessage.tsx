@@ -240,8 +240,8 @@ export default function ChatMessage({
       <div
         className={
           message.role === "user"
-            ? "rounded-3xl rounded-br-md bg-[#2a5970] px-4 py-3 text-sm leading-relaxed text-white shadow-sm"
-            : "rounded-3xl rounded-bl-md border border-slate-200 bg-white px-4 py-3 text-sm leading-relaxed text-[#2f3841] shadow-sm"
+            ? "whitespace-pre-line rounded-3xl rounded-br-md bg-[#2a5970] px-4 py-3 text-sm leading-relaxed text-white shadow-sm"
+            : "whitespace-pre-line rounded-3xl rounded-bl-md border border-slate-200 bg-white px-4 py-3 text-sm leading-relaxed text-[#2f3841] shadow-sm"
         }
       >
         {message.content}
