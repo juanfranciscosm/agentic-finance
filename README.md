@@ -32,21 +32,6 @@ Gemini interpreta la intención y extrae datos estructurados. Las escrituras, c�
 
 ---
 
-## Identidad visual
-
-| Uso | Color |
-|---|---|
-| Fondo oscuro y texto principal | `#2f3841` |
-| Azul institucional | `#2a5970` |
-| Celeste de acento | `#53c5e9` |
-
-```text
-AIROS Financial Agent
-Finanzas personales, presupuestos y soporte inteligente en una sola conversación.
-```
-
----
-
 ## Track del hackathon
 
 **Track 2 — Financial Services / Financial Agent**
@@ -68,11 +53,17 @@ El agente:
 5. Guarda la transacción solo después de la confirmación.
 6. Actualiza ingresos, gastos y saldo.
 
+
+![ejemplo 1](public/ejemplo1.png)
+
+
 También reconoce ingresos:
 
 ```text
 Me pagaron $100 por vender unos muebles
 ```
+
+![ejemplo 2](public/ejemplo2.png)
 
 ### Historia 2: presupuestos y alertas comprensibles
 
