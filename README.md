@@ -95,6 +95,9 @@ Falta para la alerta: $30
 Disponible total: $60
 ```
 
+![ejemplo3](ejemplo3.png)
+
+
 ### Historia 3: soporte y escalamiento humano
 
 La base aprobada responde preguntas como:
@@ -108,6 +111,9 @@ La base aprobada responde preguntas como:
 ¿Cómo puedo proteger mi cuenta?
 ```
 
+![ejemplo4](ejemplo4.png)
+
+
 Los casos sensibles generan una vista previa de ticket:
 
 ```text
@@ -115,6 +121,8 @@ No reconozco una transferencia de $500
 Están intentando hackear mi cuenta
 Alguien ingresó a mi cuenta sin autorización
 ```
+
+![ejemplo5](ejemplo5.png)
 
 Cada ticket incluye resumen, categoría, prioridad, motivo y contexto reciente.
 
@@ -127,9 +135,9 @@ Cada ticket incluye resumen, categoría, prioridad, motivo y contexto reciente.
 El frontend envía al backend los últimos mensajes de la conversación.
 
 ```text
-Usuario: Gasté $25 ayer
+Usuario: Gasté $60 ayer
 Agente: ¿En qué categoría?
-Usuario: Fue en comida
+Usuario: Compre ropa
 ```
 
 Resultado:
@@ -140,6 +148,8 @@ Categoría: Alimentación
 Fecha: ayer
 ```
 
+![ejemplo6](ejemplo6.png)
+
 También funciona con preguntas de seguimiento:
 
 ```text
@@ -147,6 +157,10 @@ Usuario: ¿Cómo retiro dinero?
 Agente: ...
 Usuario: ¿Y cuánto demora?
 ```
+
+![ejemplo7](ejemplo7.png)
+
+![ejemplo8](ejemplo8.png)
 
 El historial visual se conserva en `sessionStorage` durante la sesión de la pestaña.
 
@@ -591,8 +605,8 @@ updated_at
 ### Clonar
 
 ```bash
-git clone https://github.com/juanfranciscosm/REEMPLAZAR-CON-NOMBRE-DEL-REPOSITORIO.git
-cd REEMPLAZAR-CON-NOMBRE-DEL-REPOSITORIO
+git clone https://github.com/juanfranciscosm/agentic-finance 
+cd agentic-finance 
 ```
 
 ### Instalar
@@ -698,75 +712,6 @@ npx vitest run src/lib/support/support-router.test.ts
 
 ---
 
-## Casos de demo
-
-### Gasto
-
-```text
-Ayer gasté $25 en comida en Sweet & Coffee
-```
-
-### Memoria
-
-```text
-Gasté $25 ayer
-Fue en comida
-```
-
-### Presupuesto
-
-```text
-Crea un presupuesto mensual de $100 para comida y avísame al 60%
-Gasté $65 en comida
-```
-
-Resultado esperado:
-
-```text
-Umbral: 60% · $60
-Superación: $5
-Disponible: $35
-```
-
-### Resumen
-
-```text
-Ver mi situación financiera
-```
-
-### Base aprobada
-
-```text
-¿Cuál es el costo de una transferencia?
-```
-
-### Seguimiento
-
-```text
-¿Cómo retiro dinero?
-¿Y cuánto demora?
-```
-
-### Seguridad alta
-
-```text
-Están intentando hackear mi cuenta
-```
-
-### Seguridad urgente
-
-```text
-Alguien ingresó a mi cuenta sin autorización
-```
-
-### Fraude urgente
-
-```text
-No reconozco una transferencia de $500
-```
-
----
-
 ## UX
 
 - Diseño responsivo.
@@ -832,130 +777,6 @@ Posibles integraciones:
 - No ofrece asesoría personalizada de inversión.
 
 Una implementación real requeriría revisión legal, regulatoria, de seguridad, privacidad y protección de datos aplicable en Ecuador.
-
----
-
-## Limitaciones
-
-- Usuario de demostración.
-- Sin autenticación real.
-- Sin conexión bancaria.
-- No mueve dinero.
-- No bloquea operaciones reales.
-- Sin notificaciones externas.
-- Memoria persistente limitada a la sesión.
-- Base de conocimiento ficticia.
-- Dependencia de cuota de Gemini.
-
----
-
-## Roadmap
-
-- Supabase Auth.
-- Multiusuario.
-- Conversaciones persistentes.
-- Panel administrativo.
-- Edición de presupuestos.
-- Notificaciones por correo o WhatsApp.
-- Exportación CSV/PDF.
-- Gráficos de tendencias.
-- Detección de patrones recurrentes.
-- Pronóstico de liquidez.
-- Open Banking.
-- Auditoría del agente.
-
----
-
-## Despliegue
-
-Variables necesarias en Vercel:
-
-```text
-GEMINI_API_KEY
-GEMINI_MODEL
-GEMINI_FALLBACK_MODEL
-SUPABASE_URL
-SUPABASE_SECRET_KEY
-DEMO_USER_ID
-```
-
-### Demo
-
-```text
-https://REEMPLAZAR-CON-URL-DE-VERCEL
-```
-
-### Repositorio
-
-```text
-https://github.com/juanfranciscosm/REEMPLAZAR-CON-NOMBRE-DEL-REPOSITORIO
-```
-
----
-
-## Entregables del hackathon
-
-- [ ] Video de máximo 3 minutos.
-- [ ] ZIP del proyecto.
-- [ ] Documento técnico.
-- [ ] Repositorio público.
-- [ ] Demo desplegada.
-- [ ] Diagrama de arquitectura.
-- [ ] Track identificado.
-- [ ] Tipo de negocio identificado.
-- [ ] Integración empresarial explicada.
-- [ ] Evidencia de pruebas.
-- [ ] Enlaces públicos verificados.
-- [ ] Secretos fuera del repositorio.
-
-```text
-Video:
-https://REEMPLAZAR
-
-ZIP:
-https://REEMPLAZAR
-
-Documento técnico:
-https://REEMPLAZAR
-
-Repositorio:
-https://REEMPLAZAR
-
-Demo:
-https://REEMPLAZAR
-```
-
----
-
-## Guion sugerido para el video
-
-### 0:00–0:20
-
-Problema y contexto.
-
-### 0:20–0:40
-
-Presentación de AIROS Financial Agent y arquitectura.
-
-### 0:40–1:15
-
-Registro de una transacción y actualización del dashboard.
-
-### 1:15–1:50
-
-Creación de presupuesto y alerta comprensible.
-
-### 1:50–2:25
-
-Consulta conocida y caso sensible con ticket.
-
-### 2:25–2:45
-
-Memoria conversacional.
-
-### 2:45–3:00
-
-Control de alucinaciones, escalabilidad y cierre.
 
 ---
 
